@@ -1,289 +1,167 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Tic Tac Toe</title>
-  <style>
-    :root {
-      --pink: #f8cbd6;
-      --panel: #fff;
-      --grid: #333;
-    }
-    * { box-sizing: border-box; }
-    body {
-      font-family: Arial, Helvetica, sans-serif;
-      background: #fff;
-      margin: 0;
-      padding: 0;
-      text-align: center;
-    }
-    .container {
-      width: 100%;
-      max-width: 700px;
-      margin: 0 auto;
-      padding: 20px;
-    }
-    h1.brand {
-      font-family: "Comic Sans MS", "Comic", cursive;
-      font-size: 48px;
-      letter-spacing: 2px;
-      margin: 20px 0 10px;
-      text-shadow: 0 2px 0 rgba(0,0,0,.08);
-    }
-    .hidden { display: none; }
+<!DOCTYPE html>  
+<html lang="en">  
+<head>  
+  <meta charset="UTF-8" />  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>  
+  <title>Tic Tac Toe</title>  
+  <style>  
+    :root {  
+      --pink: #f8cbd6;  
+      --grid: #333;  
+    }  
+    * { box-sizing: border-box; }  
+    body {  
+      margin: 0;  
+      font-family: Arial, Helvetica, sans-serif;  
+      text-align: center;  
+      background: #fff;  
+    }  
+    .container {  
+      width: 100%;  
+      max-width: 760px;  
+      margin: 0 auto;  
+      padding: 20px;  
+    }  
 
-    /* Initial form view */
-    .board-setup {
-      margin-top: 20px;
-    }
-    .row {
-      display: flex;
-      justify-content: center;
-      gap: 12px;
-      margin: 8px 0;
-    }
-    input[type="text"] {
-      padding: 12px 14px;
-      width: 260px;
-      border: 2px solid #333;
-      border-radius: 6px;
-      font-size: 16px;
-    }
-    button#submit {
-      padding: 12px 26px;
-      font-size: 16px;
-      border: 2px solid #333;
-      background: #fff;
-      border-radius: 8px;
-      cursor: pointer;
-    }
+    /* Title */  
+    h1.brand {  
+      font-family: "Comic Sans MS", "Comic", cursive;  
+      font-size: 52px;  
+      margin: 20px 0;  
+      letter-spacing: 2px;  
+      user-select: none;  
+    }  
 
-    /* Board view */
-    .game-area {
-      margin-top: 20px;
-    }
-    .board {
-      display: grid;
-      grid-template-columns: repeat(3, 120px);
-      grid-template-rows: repeat(3, 120px);
-      gap: 0;
-      width: max-content;
-      margin: 0 auto;
-      border: 4px solid #333;
-    }
-    .cell {
-      width: 120px;
-      height: 120px;
-      border: 2px solid #333;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 72px;
-      cursor: pointer;
-      background: var(--pink);
-      user-select: none;
-    }
-    .cell:focus { outline: none; }
-    .cell.x { color: #111; }
-    .cell.o { color: #111; }
+    /* Initial setup view */  
+    .board-setup { margin: 20px 0 10px; }  
+    .row { display: flex; justify-content: center; gap: 12px; margin: 8px 0; }  
+    input[type="text"] {  
+      padding: 12px 14px;  
+      width: 260px;  
+      border: 2px solid #333;  
+      border-radius: 6px;  
+      font-size: 16px;  
+    }  
+    button#submit {  
+      padding: 12px 26px;  
+      font-size: 16px;  
+      border: 2px solid #333;  
+      background: #fff;  
+      border-radius: 8px;  
+      cursor: pointer;  
+    }  
 
-    .message {
-      margin-top: 20px;
-      font-size: 20px;
-      font-weight: bold;
-    }
+    /* Board view */  
+    .hidden { display: none; }  
+    .game-area { margin-top: 10px; }  
+    h2.subtitle { margin: 0 0 6px; font-weight: 600; }  
 
-    /* Opponent win highlight (optional) */
-    .win {
-      background: #7a1c9d; /* purple highlight for winning row */
-      color: #fff;
-    }
+    .board {  
+      display: grid;  
+      grid-template-columns: repeat(3, 120px);  
+      grid-template-rows: repeat(3, 120px);  
+      gap: 0;  
+      width: max-content;  
+      margin: 0 auto;  
+      border: 4px solid #333;  
+    }  
+    .cell {  
+      width: 120px; height: 120px;  
+      border: 2px solid #333;  
+      display: flex;  
+      align-items: center; justify-content: center;  
+      font-size: 72px;  
+      cursor: pointer;  
+      background: var(--pink);  
+      user-select: none;  
+    }  
+    .cell.x { color: #111; }  
+    .cell.o { color: #111; }  
 
-    /* Responsive tweaks for small screens */
-    @media (max-width: 520px) {
-      .cell { width: 90px; height: 90px; font-size: 64px; }
-      .board { border-width: 3px; }
-    }
-  </style>
-</head>
-<body>
+    .message {  
+      margin-top: 18px;  
+      font-size: 20px;  
+      font-weight: 600;  
+    }  
 
-<div class="container">
-  <!-- Title -->
-  <h1 class="brand">TIC TAC TOE</h1>
+    /* Optional win highlight */  
+    .win { background: #7a1c9d; color: #fff; }  
 
-  <!-- Initial setup: two player name inputs and submit -->
-  <section id="setup" class="board-setup">
-    <div class="row" style="justify-content:center;">
-      <label for="player-1" style="font-size:16px; width:120px; text-align:right; padding-right:8px;">Player 1</label>
-      <input type="text" id="player-1" placeholder="enter name" />
-    </div>
-    <div class="row" style="justify-content:center;">
-      <label for="player-2" style="font-size:16px; width:120px; text-align:right; padding-right:8px;">Player 2</label>
-      <input type="text" id="player-2" placeholder="enter name" />
-    </div>
-    <div class="row" style="justify-content:center;">
-      <button id="submit" type="button">Start Game</button>
-    </div>
-  </section>
+    @media (max-width: 520px) {  
+      .cell { width: 90px; height: 90px; font-size: 64px; }  
+      .board { border-width: 3px; }  
+    }  
+  </style>  
+</head>  
+<body>  
 
-  <!-- Game board view (hidden initially) -->
-  <section id="game" class="hidden game-area" aria-label="tic tac toe game board">
-    <h2 style="margin:16px 0 8px; font-weight:600;">Tic Tac Toe</h2>
-    <div class="message" id="message"></div>
+<div class="container">  
+  <h1 class="brand">TIC TAC TOE</h1>  
 
-    <div class="board" id="board" role="grid" aria-label="tic tac toe board">
-      <div class="cell" id="1" role="gridcell" tabindex="0"></div>
-      <div class="cell" id="2" role="gridcell" tabindex="0"></div>
-      <div class="cell" id="3" role="gridcell" tabindex="0"></div>
-      <div class="cell" id="4" role="gridcell" tabindex="0"></div>
-      <div class="cell" id="5" role="gridcell" tabindex="0"></div>
-      <div class="cell" id="6" role="gridcell" tabindex="0"></div>
-      <div class="cell" id="7" role="gridcell" tabindex="0"></div>
-      <div class="cell" id="8" role="gridcell" tabindex="0"></div>
-      <div class="cell" id="9" role="gridcell" tabindex="0"></div>
-    </div>
-  </section>
-</div>
+  <!-- Initial setup: two player name inputs and submit -->  
+  <section id="setup" class="board-setup">  
+    <div class="row" style="justify-content:center;">  
+      <label for="player-1" style="font-size:16px; width:120px; text-align:right; padding-right:8px;">Player 1</label>  
+      <input type="text" id="player-1" placeholder="enter name" />  
+    </div>  
+    <div class="row" style="justify-content:center;">  
+      <label for="player-2" style="font-size:16px; width:120px; text-align:right; padding-right:8px;">Player 2</label>  
+      <input type="text" id="player-2" placeholder="enter name" />  
+    </div>  
+    <div class="row" style="justify-content:center;">  
+      <button id="submit" type="button">Start Game</button>  
+    </div>  
+  </section>  
 
-<script>
-  // Elements
-  const setupSection = document.getElementById('setup');
-  const gameSection  = document.getElementById('game');
-  const boardEl      = document.getElementById('board');
-  const messageEl    = document.getElementById('message');
-  const submitBtn    = document.getElementById('submit');
-  const p1Input      = document.getElementById('player-1');
-  const p2Input      = document.getElementById('player-2');
-  const cells        = Array.from(document.querySelectorAll('.cell'));
+  <!-- Game board view (hidden initially) -->  
+  <section id="game" class="hidden game-area" aria-label="tic tac toe game board">  
+    <h2 class="subtitle" style="margin-top:6px;">Tic Tac Toe</h2>  
+    <div class="message" id="message"></div>  
 
-  // Game state
-  let board = Array(9).fill(null); // 0..8 indexes
-  let currentPlayer = 'X'; // Player 1 is X
-  let players = { X: '', O: '' };
-  let gameOver = false;
+    <div class="board" id="board" role="grid" aria-label="tic tac toe board">  
+      <div class="cell" id="1" role="gridcell" tabindex="0"></div>  
+      <div class="cell" id="2" role="gridcell" tabindex="0"></div>  
+      <div class="cell" id="3" role="gridcell" tabindex="0"></div>  
+      <div class="cell" id="4" role="gridcell" tabindex="0"></div>  
+      <div class="cell" id="5" role="gridcell" tabindex="0"></div>  
+      <div class="cell" id="6" role="gridcell" tabindex="0"></div>  
+      <div class="cell" id="7" role="gridcell" tabindex="0"></div>  
+      <div class="cell" id="8" role="gridcell" tabindex="0"></div>  
+      <div class="cell" id="9" role="gridcell" tabindex="0"></div>  
+    </div>  
+  </section>  
+</div>  
 
-  // Helpers
-  const winningLines = [
-    [0,1,2], [3,4,5], [6,7,8], // rows
-    [0,3,6], [1,4,7], [2,5,8], // cols
-    [0,4,8], [2,4,6]           // diagonals
-  ];
+<script>  
+  // Elements  
+  const setupSection = document.getElementById('setup');  
+  const gameSection  = document.getElementById('game');  
+  const messageEl    = document.getElementById('message');  
+  const submitBtn    = document.getElementById('submit');  
+  const p1Input      = document.getElementById('player-1');  
+  const p2Input      = document.getElementById('player-2');  
+  const cells        = Array.from(document.querySelectorAll('.cell'));  
 
-  function setMessage(text) {
-    messageEl.textContent = text;
-  }
+  // Game state  
+  let board = Array(9).fill(null);  
+  let currentPlayer = 'X'; // X = Player 1  
+  let players = { X: '', O: '' };  
+  let gameOver = false;  
 
-  function updateTurnMessage() {
-    const turnName = (currentPlayer === 'X') ? players.X : players.O;
-    setMessage(`${turnName}, you're up`);
-  }
+  // All winning lines  
+  const winningLines = [  
+    [0,1,2], [3,4,5], [6,7,8], // rows  
+    [0,3,6], [1,4,7], [2,5,8], // cols  
+    [0,4,8], [2,4,6]           // diagonals  
+  ];  
 
-  function resetBoardUI() {
-    cells.forEach((cell) => {
-      cell.textContent = '';
-      cell.classList.remove('x','o','win');
-    });
-  }
+  function setMessage(text) {  
+    messageEl.textContent = text;  
+  }  
 
-  function checkWinner() {
-    for (const line of winningLines) {
-      const a = board[line[0]];
-      const b = board[line[1]];
-      const c = board[line[2]];
-      if (a && a === b && a === c) {
-        return { winner: a, line };
-      }
-    }
-    return null;
-  }
+  function updateTurnMessage() {  
+    const turnName = (currentPlayer === 'X') ? players.X : players.O;  
+    setMessage(`${turnName}, you're up`);  
+  }  
 
-  function highlightWin(line) {
-    line.forEach(idx => {
-      const el = document.getElementById((idx+1).toString());
-      if (el) el.classList.add('win');
-    });
-  }
-
-  function handleMove(index) {
-    if (gameOver) return;
-    if (board[index] !== null) return;
-
-    board[index] = currentPlayer;
-    const cellEl = document.getElementById((index+1).toString());
-    cellEl.textContent = currentPlayer;
-    cellEl.classList.add(currentPlayer === 'X' ? 'x' : 'o');
-
-    const result = checkWinner();
-    if (result) {
-      gameOver = true;
-      const winnerName = (currentPlayer === 'X') ? players.X : players.O;
-      setMessage(`${winnerName} congratulations you won!`);
-      if (result.line) highlightWin(result.line);
-      return;
-    }
-
-    // Check draw
-    if (board.every(v => v !== null)) {
-      setMessage("It's a draw!");
-      gameOver = true;
-      return;
-    }
-
-    // Switch turn
-    currentPlayer = (currentPlayer === 'X') ? 'O' : 'X';
-    updateTurnMessage();
-  }
-
-  // Initialize: attach events
-  function initBoardEvents() {
-    cells.forEach((cell, idx) => {
-      cell.addEventListener('click', () => handleMove(idx));
-      cell.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter' || e.key === ' ') {
-          e.preventDefault();
-          handleMove(idx);
-        }
-      });
-    });
-  }
-
-  // On load: hide game area
-  function init() {
-    gameSection.classList.add('hidden');
-  }
-
-  // Submit handler
-  submitBtn.addEventListener('click', () => {
-    const name1 = (p1Input.value || '').trim();
-    const name2 = (p2Input.value || '').trim();
-
-    if (!name1 || !name2) {
-      alert('Please enter names for both players.');
-      return;
-    }
-
-    // Set players
-    players.X = name1;
-    players.O = name2;
-
-    // Reset game state
-    board = Array(9).fill(null);
-    currentPlayer = 'X';
-    gameOver = false;
-    resetBoardUI();
-
-    // Show game view
-    setupSection.classList.add('hidden');
-    gameSection.classList.remove('hidden');
-    // Initialize messages and UI
-    updateTurnMessage();
-  });
-
-  // Initialize
-  init();
-  initBoardEvents();
-</script>
-</body>
-</html>
+  function reset
