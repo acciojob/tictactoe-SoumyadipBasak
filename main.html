@@ -1,16 +1,271 @@
 <!DOCTYPE html>
-
-<html>
-
+<html lang="en">
 <head>
-	<link rel="stylesheet" href="styles.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Tic Tac Toe</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      background: #f8f8f8;
+      margin: 0;
+      padding: 20px;
+    }
+    .container {
+      max-width: 520px;
+      margin: 0 auto;
+    }
+    /* Entrance form */
+    #setup {
+      display: block;
+      margin-top: 40px;
+    }
+    .field {
+      margin: 10px 0;
+    }
+    label {
+      display: inline-block;
+      width: 100px;
+      text-align: right;
+      margin-right: 10px;
+    }
+    input[type="text"] {
+      width: 260px;
+      padding: 8px 10px;
+      border: 1px solid #333;
+      border-radius: 4px;
+    }
+    button#submit {
+      margin-top: 12px;
+      padding: 12px 26px;
+      font-size: 16px;
+      border: 2px solid #333;
+      background: #fff;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    /* Board view */
+    #board {
+      display: none;
+      margin-top: 20px;
+    }
+    h1 {
+      font-family: "Comic Sans MS", cursive, "Lucida Handwriting", Arial;
+      font-size: 40px;
+      margin: 15px 0 10px;
+    }
+    .message {
+      font-size: 20px;
+      margin: 8px 0 14px;
+    }
+    .grid {
+      width: 360px;
+      height: 360px;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      grid-template-rows: repeat(3, 1fr);
+      gap: 0;
+      margin: 0 auto;
+      border: 2px solid #333;
+    }
+    .cell {
+      border: 1px solid #333;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 72px;
+      cursor: pointer;
+      user-select: none;
+      background: #f9d7e0; /* pink-ish by default to resemble screenshots */
+      transition: background 0.2s;
+    }
+    .cell:hover {
+      background: #ffd2e0;
+    }
+    .cell.x {
+      color: #000;
+    }
+    .cell.o {
+      color: #000;
+    }
+    /* Winning highlight (optional) */
+    .cell.winner {
+      background: #c7a0ff;
+    }
+
+    /* Centering tweaks for small screens */
+    @media (max-width: 520px) {
+      .grid { width: 300px; height: 300px; }
+      .cell { font-size: 64px; }
+    }
+  </style>
 </head>
-
 <body>
-	<!-- the entire body must be written by student -->
-    <script type="text/javascript" src="./script.js">
-</script>
+  <div class="container">
+    <!-- Setup form: two player names and start button -->
+    <section id="setup" aria-label="Player Setup">
+      <h2 style="font-family: 'Impact', 'Arial Black', sans-serif; font-size: 42px; margin: 8px 0;">
+        TIC TAC TOE
+      </h2>
 
+      <div class="field" style="display:flex; justify-content:center; gap:12px;">
+        <div style="text-align:right;">
+          <label for="player-1">Player 1</label>
+        </div>
+        <input id="player-1" type="text" placeholder="enter name" />
+      </div>
+      <div class="field" style="display:flex; justify-content:center; gap:12px;">
+        <div style="text-align:right;">
+          <label for="player-2">Player 2</label>
+        </div>
+        <input id="player-2" type="text" placeholder="enter name" />
+      </div>
+      <button id="submit" type="button">Start Game</button>
+    </section>
+
+    <!-- Game board -->
+    <section id="board" aria-label="Game Board">
+      <h1>TIC TAC TOE</h1>
+      <div class="message" id="messageArea"></div>
+
+      <div class="grid" id="grid" role="grid" aria-label="Tic Tac Toe Board">
+        <!-- 9 cells with ids 1..9 -->
+        <div class="cell" id="cell-1" role="gridcell" data-index="0"></div>
+        <div class="cell" id="cell-2" role="gridcell" data-index="1"></div>
+        <div class="cell" id="cell-3" role="gridcell" data-index="2"></div>
+        <div class="cell" id="cell-4" role="gridcell" data-index="3"></div>
+        <div class="cell" id="cell-5" role="gridcell" data-index="4"></div>
+        <div class="cell" id="cell-6" role="gridcell" data-index="5"></div>
+        <div class="cell" id="cell-7" role="gridcell" data-index="6"></div>
+        <div class="cell" id="cell-8" role="gridcell" data-index="7"></div>
+        <div class="cell" id="cell-9" role="gridcell" data-index="8"></div>
+      </div>
+
+      <!-- Optional reset button (not required by spec) -->
+      <!-- <button id="reset" type="button" style="margin-top:16px;">Reset</button> -->
+    </section>
+  </div>
+
+  <script>
+    // Game state
+    const setupSection = document.getElementById('setup');
+    const boardSection = document.getElementById('board');
+    const messageArea = document.getElementById('messageArea');
+    const grid = document.getElementById('grid');
+    const cells = Array.from(document.querySelectorAll('.cell'));
+    const submitBtn = document.getElementById('submit');
+    const p1Input = document.getElementById('player-1');
+    const p2Input = document.getElementById('player-2');
+
+    let board = Array(9).fill(null); // 'X' or 'O'
+    let currentPlayer = 'X'; // X starts
+    let players = { X: '', O: '' };
+    let gameActive = false;
+
+    const WINNING_COMBINATIONS = [
+      [0,1,2], [3,4,5], [6,7,8], // rows
+      [0,3,6], [1,4,7], [2,5,8], // cols
+      [0,4,8], [2,4,6]           // diagonals
+    ];
+
+    // Initialize
+    function startGame() {
+      const name1 = (p1Input.value || 'Player 1').trim();
+      const name2 = (p2Input.value || 'Player 2').trim();
+      players.X = name1;
+      players.O = name2;
+
+      // Reset state
+      board.fill(null);
+      currentPlayer = 'X';
+      gameActive = true;
+
+      // Clear UI
+      cells.forEach(c => {
+        c.textContent = '';
+        c.classList.remove('x','o','winner');
+        c.style.pointerEvents = 'auto';
+      });
+
+      // Show initial message
+      updateMessage();
+      // Show board, hide setup
+      setupSection.style.display = 'none';
+      boardSection.style.display = 'block';
+    }
+
+    // Update the turn message
+    function updateMessage() {
+      if (!gameActive) return;
+      const currentName = currentPlayer === 'X' ? players.X : players.O;
+      messageArea.textContent = `${currentName}, you're up`;
+    }
+
+    // Handle a move
+    function handleMove(index) {
+      if (!gameActive || board[index] !== null) return;
+
+      board[index] = currentPlayer;
+      const cell = document.getElementById(`cell-${index+1}`);
+      cell.textContent = currentPlayer;
+      cell.classList.add(currentPlayer === 'X' ? 'x' : 'o');
+      // Check win or draw
+      if (checkWin()) {
+        const winnerName = currentPlayer === 'X' ? players.X : players.O;
+        endGame(`${winnerName} congratulations you won!`);
+        // highlight winning cells
+        highlightWinner();
+        return;
+      }
+      if (board.every(v => v !== null)) {
+        endGame(`It's a draw!`);
+        return;
+      }
+      // Switch player
+      currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
+      updateMessage();
+    }
+
+    // Check for win
+    function checkWin() {
+      return WINNING_COMBINATIONS.some(combo => {
+        const [a,b,c] = combo;
+        return board[a] && board[a] === board[b] && board[a] === board[c];
+      });
+    }
+
+    // Highlight winning combination
+    function highlightWinner() {
+      for (const combo of WINNING_COMBINATIONS) {
+        const [a,b,c] = combo;
+        if (board[a] && board[a] === board[b] && board[a] === board[c]) {
+          document.getElementById(`cell-${a+1}`).classList.add('winner');
+          document.getElementById(`cell-${b+1}`).classList.add('winner');
+          document.getElementById(`cell-${c+1}`).classList.add('winner');
+          break;
+        }
+      }
+      // Disable further moves
+      cells.forEach(c => c.style.pointerEvents = 'none');
+    }
+
+    // End game
+    function endGame(message) {
+      gameActive = false;
+      messageArea.textContent = message;
+      // Disable further moves
+      cells.forEach(c => c.style.pointerEvents = 'none');
+    }
+
+    // Attach events
+    submitBtn.addEventListener('click', startGame);
+
+    cells.forEach((cell, idx) => {
+      cell.addEventListener('click', () => handleMove(idx));
+    });
+
+  </script>
 </body>
-
 </html>
