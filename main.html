@@ -1,281 +1,295 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta charset="utf-8" />
   <title>Tic Tac Toe</title>
   <style>
-    /* Page layout */
     body {
       font-family: Arial, Helvetica, sans-serif;
       text-align: center;
-      background: #f8f8f8;
+      background: #f9f9f9;
       margin: 0;
       padding: 20px;
     }
 
     .container {
-      max-width: 700px;
+      width: 420px;
       margin: 0 auto;
     }
 
-    /* Title style (like the screenshot) */
-    .brand {
-      font-family: "Comic Sans MS", "Chalkboard SE", cursive;
-      font-size: 56px;
+    /* Header style (as in your design) */
+    .logo {
+      font-family: "Comic Sans MS", cursive;
+      font-weight: 700;
+      font-size: 48px;
+      margin: 20px 0;
       letter-spacing: 2px;
-      margin: 10px 0 20px;
-      user-select: none;
+      text-transform: uppercase;
     }
 
-    /* Pre-game input area */
-    #preGame {
+    /* Initial view: name inputs */
+    #start-view {
       display: block;
-      margin: 40px auto;
     }
 
-    .row {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 12px;
-      margin: 10px 0;
+    #board-view {
+      display: none;
+    }
+
+    .field {
+      margin: 8px 0;
+      text-align: left;
     }
 
     label {
-      font-weight: 600;
-      margin-right: 6px;
+      display: inline-block;
+      width: 100px;
     }
 
     input[type="text"] {
-      width: 260px;
-      padding: 10px 12px;
-      font-size: 16px;
-      border: 2px solid #333;
+      width: 220px;
+      padding: 6px 8px;
+      border: 1px solid #333;
       border-radius: 4px;
-      outline: none;
     }
 
-    button#submit {
-      padding: 12px 28px;
+    #submit {
+      margin-top: 12px;
+      padding: 12px 22px;
       font-size: 16px;
       border-radius: 6px;
-      border: 2px solid #333;
-      background: #fff;
+      border: 1px solid #333;
       cursor: pointer;
+      background: #fff;
     }
 
-    /* Game board */
-    #gameArea {
-      display: none; /* hidden until after submit */
-    }
-
+    /* Board */
     h1 {
       margin-top: 20px;
       font-size: 28px;
     }
 
     .message {
-      font-weight: 600;
-      margin: 6px 0 12px;
+      margin: 10px 0 14px;
+      font-size: 18px;
     }
 
-    /* 3x3 board grid */
     .board {
-      width: 420px;
-      height: 420px;
+      width: 360px;
+      height: 360px;
       display: grid;
       grid-template-columns: repeat(3, 1fr);
       grid-template-rows: repeat(3, 1fr);
-      gap: 4px;
+      gap: 0;
       margin: 0 auto;
-      border: 4px solid #333;
-      padding: 6px;
-      background: #fff;
+      border: 2px solid #333;
     }
 
     .cell {
-      background: #f8cbd9; /* pink cells like screenshot base */
-      border: 2px solid #333;
+      width: 120px;
+      height: 120px;
       display: flex;
       align-items: center;
       justify-content: center;
       font-size: 72px;
-      font-weight: 700;
-      color: #000;
       cursor: pointer;
-      user-select: none;
+      border: 1px solid #333;
+      background: #f8cbd8; /* pink-ish background like your screenshot */
     }
 
-    /* Winning or mirror states (optional visual tweak) */
-    .cell.filled {
-      cursor: default;
-    }
+    .cell.X { color: #111; }
+    .cell.O { color: #fff; text-shadow: 0 0 2px #000; }
 
-    /* When someone wins, show the board with highlight on winning line (optional) */
-    .winner {
-      /* no specific style here; can be extended if desired */
-    }
+    /* Win state visuals (optional) */
+    .cell.X { background: #f6c6d8; }
+    .cell.O { background: #6a0dad; }
 
-    /* Subtle responsive tweak for smaller viewports */
-    @media (max-width: 520px) {
-      .board { width: 90vw; height: 90vw; }
-      .cell { font-size: 58px; }
+    /* Reset / simple layout cleanup on small screens */
+    @media (max-width: 480px) {
+      .container { width: 92%; }
+      #start-view, #board-view { width: 100%; }
+      .board { width: 100%; height: auto; aspect-ratio: 1/1; }
+      .cell { font-size: 60px; }
     }
   </style>
 </head>
 <body>
-  <div class="container">
-    <!-- Initial view: two input boxes and a Start button -->
-    <div id="preGame">
-      <div class="brand" aria-label="Tic Tac Toe Brand">TIC TAC TOE</div>
 
-      <div class="row" style="justify-content:center;">
+  <div class="container" id="app">
+    <!-- Initial view: player names -->
+    <div id="start-view">
+      <div class="logo">TIC TAC TOE</div>
+
+      <div class="field">
         <label for="player-1">Player 1</label>
         <input type="text" id="player-1" placeholder="enter name" />
       </div>
-
-      <div class="row" style="justify-content:center;">
+      <div class="field">
         <label for="player-2">Player 2</label>
         <input type="text" id="player-2" placeholder="enter name" />
       </div>
 
-      <div class="row" style="justify-content:center;">
-        <button id="submit" aria-label="Start Game">Start Game</button>
+      <button id="submit">Start Game</button>
+    </div>
+
+    <!-- Board view -->
+    <div id="board-view" aria-live="polite">
+      <div class="logo" style="margin-top:20px;">TIC TAC TOE</div>
+      <h1 id="board-title" style="margin-top: 8px;">Tic Tac Toe</h1>
+
+      <div class="message" id="turn-message"></div>
+
+      <div class="board" id="board" role="grid" aria-label="Tic Tac Toe board">
+        <!-- 9 cells with ids 1 through 9 -->
+        <div class="cell" id="1" role="gridcell" data-index="0"></div>
+        <div class="cell" id="2" role="gridcell" data-index="1"></div>
+        <div class="cell" id="3" role="gridcell" data-index="2"></div>
+
+        <div class="cell" id="4" role="gridcell" data-index="3"></div>
+        <div class="cell" id="5" role="gridcell" data-index="4"></div>
+        <div class="cell" id="6" role="gridcell" data-index="5"></div>
+
+        <div class="cell" id="7" role="gridcell" data-index="6"></div>
+        <div class="cell" id="8" role="gridcell" data-index="7"></div>
+        <div class="cell" id="9" role="gridcell" data-index="8"></div>
       </div>
     </div>
 
-    <!-- Game board view: initially hidden -->
-    <div id="gameArea" aria-label="Tic Tac Toe Game">
-      <h1>Tic Tac Toe</h1>
-      <div class="message" id="turnMessage"> </div>
-      <div class="board" id="board" role="grid" aria-label="Game board">
-        <!-- 9 cells with ids 1 through 9 -->
-        <div class="cell" id="1" role="gridcell" tabindex="0"></div>
-        <div class="cell" id="2" role="gridcell" tabindex="0"></div>
-        <div class="cell" id="3" role="gridcell" tabindex="0"></div>
-        <div class="cell" id="4" role="gridcell" tabindex="0"></div>
-        <div class="cell" id="5" role="gridcell" tabindex="0"></div>
-        <div class="cell" id="6" role="gridcell" tabindex="0"></div>
-        <div class="cell" id="7" role="gridcell" tabindex="0"></div>
-        <div class="cell" id="8" role="gridcell" tabindex="0"></div>
-        <div class="cell" id="9" role="gridcell" tabindex="0"></div>
-      </div>
-    </div>
   </div>
 
   <script>
     // State
-    const preGame = document.getElementById('preGame');
-    const gameArea = document.getElementById('gameArea');
-    const submitBtn = document.getElementById('submit');
-    const player1Input = document.getElementById('player-1');
-    const player2Input = document.getElementById('player-2');
-    const boardEl = document.getElementById('board');
-    const turnMessage = document.getElementById('turnMessage');
-    const cells = Array.from(document.querySelectorAll('.cell'));
-
-    let board = Array(9).fill(null); // null, 'X', 'O'
-    let currentPlayer = 'X';
-    let players = { X: '', O: '' };
-    let gameOver = false;
-
-    // Winning combos (indices 0-8)
-    const winCombos = [
+    let players = { p1: '', p2: '' };
+    let board = Array(9).fill(null); // 'X' or 'O'
+    let turn = 'X'; // 'X' for Player 1, 'O' for Player 2
+    const winLines = [
       [0,1,2], [3,4,5], [6,7,8], // rows
       [0,3,6], [1,4,7], [2,5,8], // cols
-      [0,4,8], [2,4,6]           // diagonals
+      [0,4,8], [2,4,6]           // diags
     ];
 
-    // Initialize turn message
+    // Elements
+    const startView = document.getElementById('start-view');
+    const boardView = document.getElementById('board-view');
+    const submitBtn = document.getElementById('submit');
+    const turnMessage = document.getElementById('turn-message');
+    const boardEl = document.getElementById('board');
+    const player1Input = document.getElementById('player-1');
+    const player2Input = document.getElementById('player-2');
+    const boardTitle = document.getElementById('board-title');
+
+    function getCurrentPlayerName() {
+      return turn === 'X' ? players.p1 : players.p2;
+    }
+
+    function showStartingView() {
+      startView.style.display = 'block';
+      boardView.style.display = 'none';
+    }
+
+    function showBoardView() {
+      startView.style.display = 'none';
+      boardView.style.display = 'block';
+    }
+
     function updateTurnMessage() {
-      const turnName = currentPlayer === 'X' ? players.X : players.O;
-      turnMessage.textContent = `${turnName}, you're up`;
-    }
-
-    // Render the board based on `board` state
-    function renderBoard() {
-      board.forEach((val, idx) => {
-        const cell = document.getElementById(String(idx + 1));
-        cell.textContent = val ? val : '';
-        if (val) cell.classList.add('filled');
-      });
-    }
-
-    // Check for a winner
-    function checkWinner() {
-      for (const combo of winCombos) {
-        const [a, b, c] = combo;
-        if (board[a] && board[a] === board[b] && board[a] === board[c]) {
-          return board[a]; // 'X' or 'O'
-        }
+      const name = getCurrentPlayerName() || (turn === 'X' ? players.p1 : players.p2);
+      if (name) {
+        turnMessage.textContent = `${name}, you're up`;
+      } else {
+        turnMessage.textContent = '';
       }
-      // Check draw
-      if (board.every(v => v)) {
-        return 'draw';
+    }
+
+    function resetBoard() {
+      board = Array(9).fill(null);
+      turn = 'X';
+      for (let i = 1; i <= 9; i++) {
+        const cell = document.getElementById(i.toString());
+        cell.textContent = '';
+        cell.classList.remove('X','O');
+      }
+      updateTurnMessage();
+    }
+
+    function checkWin() {
+      for (const line of winLines) {
+        const [a,b,c] = line;
+        if (board[a] && board[a] === board[b] && board[a] === board[c]) {
+          return { winner: board[a], line };
+        }
       }
       return null;
     }
 
-    // Handle cell click
-    function handleCellClick(index) {
-      if (gameOver) return;
-      if (board[index] !== null) return;
+    // Initialize click handlers for cells
+    function attachBoardHandlers() {
+      for (let i = 0; i < 9; i++) {
+        const cell = document.getElementById((i+1).toString());
+        cell.addEventListener('click', () => handleMove(i, cell));
+      }
+    }
 
-      board[index] = currentPlayer;
-      renderBoard();
+    function handleMove(index, cellEl) {
+      if (board[index] !== null) return; // already taken
 
-      const result = checkWinner();
-      if (result === 'X' || result === 'O') {
-        gameOver = true;
-        const winnerName = result === 'X' ? players.X : players.O;
+      board[index] = turn;
+      cellEl.textContent = turn;
+      // style for X/O
+      cellEl.classList.add(turn);
+
+      // Check win
+      const result = checkWin();
+      if (result) {
+        const winnerName = turn === 'X' ? players.p1 : players.p2;
         turnMessage.textContent = `${winnerName}, congratulations you won!`;
+        // Highlight winning line
+        result.line.forEach(idx => {
+          const c = document.getElementById((idx+1).toString());
+          c.style.background = '#7a1e7e'; // purple highlight
+        });
+        // Disable further moves
+        boardEl.querySelectorAll('.cell').forEach(c => c.style.pointerEvents = 'none');
         return;
-      } else if (result === 'draw') {
-        gameOver = true;
+      }
+
+      // Check draw
+      if (board.every(v => v !== null)) {
         turnMessage.textContent = `It's a draw!`;
         return;
       }
 
-      // Switch turns
-      currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
+      // Switch turn
+      turn = (turn === 'X') ? 'O' : 'X';
       updateTurnMessage();
     }
 
-    // Attach click handlers to cells
-    function attachCellHandlers() {
-      cells.forEach((cell, idx) => {
-        // Use event delegation style
-        cell.addEventListener('click', () => handleCellClick(idx));
-      });
-    }
-
-    // Start game after submitting names
+    // Start game flow
     submitBtn.addEventListener('click', () => {
-      const p1Name = player1Input.value.trim() || 'Player 1';
-      const p2Name = player2Input.value.trim() || 'Player 2';
+      const p1 = (player1Input.value || 'Player 1').trim();
+      const p2 = (player2Input.value || 'Player 2').trim();
 
-      players.X = p1Name;
-      players.O = p2Name;
+      if (!p1 || !p2) {
+        alert('Please enter names for both players.');
+        return;
+      }
 
-      // Reset board and state
-      board = Array(9).fill(null);
-      currentPlayer = 'X';
-      gameOver = false;
+      players.p1 = p1;
+      players.p2 = p2;
 
-      // Show game area, hide pre-game
-      preGame.style.display = 'none';
-      gameArea.style.display = 'block';
-
-      renderBoard();
+      // Prepare board title and initial message
+      boardTitle.textContent = 'Tic Tac Toe';
+      resetBoard();
+      showBoardView();
       updateTurnMessage();
-      // Focus first cell for accessibility
-      const firstCell = document.getElementById('1');
-      if (firstCell) firstCell.focus();
+      // make sure board is ready
+      attachBoardHandlers();
+      // prevent repeat handlers if user restarts
+      submitBtn.disabled = true;
     });
 
     // Initialize
-    attachCellHandlers();
+    showStartingView();
   </script>
 </body>
 </html>
